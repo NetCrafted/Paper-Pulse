@@ -1,0 +1,63 @@
+<section class="py-5">
+  <div class="container px-5">
+    <div class="bg-light rounded-4 py-5 px-4 px-md-5">
+      <div class="text-center mb-5">
+        <div
+          class="feature bg-primary text-white rounded-3 mb-3 d-inline-flex align-items-center justify-content-center"
+          style="width: 3rem; height: 3rem"
+        >
+          <i class="bi bi-box-arrow-in-right fs-4"></i>
+        </div>
+        <h1 class="fw-bolder">Login to Your Account</h1>
+        <p class="lead fw-normal text-muted mb-0">
+          You're a step away from accessing PaperPulse
+        </p>
+      </div>
+
+      <div class="row gx-5 justify-content-center">
+        <div class="col-lg-8 col-xl-6">
+          <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+            <div class="form-floating mb-3">
+              <input
+                type="text"
+                id="username"
+                formControlName="username"
+                class="form-control"
+                placeholder="Username"
+              />
+              <label for="username">Username</label>
+            </div>
+
+            <div class="form-floating mb-3">
+              <input
+                type="password"
+                id="password"
+                formControlName="password"
+                class="form-control"
+                placeholder="Password"
+              />
+              <label for="password">Password</label>
+            </div>
+            <div *ngIf="loginError" class="alert alert-danger mt-3 text-center">
+              {{ loginError }}
+            </div>
+            <div class="d-grid">
+              <button
+                class="btn btn-primary btn-lg"
+                type="submit"
+                [disabled]="!loginForm.valid"
+              >
+                Login
+              </button>
+            </div>
+          </form>
+
+          <p class="mt-3 text-center">
+            Don't have an account?
+            <a routerLink="/register">Register here</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

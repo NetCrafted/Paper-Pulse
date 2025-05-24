@@ -1,0 +1,40 @@
+<section class="container mt-5">
+  <h1 class="mb-4 text-center text-gradient">Dashboard</h1>
+  <div class="row">
+    <!-- Donut Chart -->
+    <div class="col-md-6 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-body text-center">
+          <h5 class="card-title">Papers per Category</h5>
+          <div style="height: 300px">
+            <canvas
+              baseChart
+              [data]="categoryChartData"
+              [type]="'doughnut'"
+              [options]="chartOptions"
+            >
+            </canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bar Chart -->
+    <div class="col-md-6 mb-4">
+      <div class="card shadow-sm">
+        <div class="card-body text-center">
+          <h5 class="card-title">Papers per Year</h5>
+          <div style="height: 300px">
+            <canvas
+              baseChart
+              [data]="yearChartData"
+              [type]="'bar'"
+              [options]="yearOptions"
+            >
+            </canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

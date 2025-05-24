@@ -1,0 +1,94 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm py-3">
+  <div class="container px-5">
+    <!-- Brand -->
+    <a class="navbar-brand" *ngIf="!isLoggedIn()" routerLink="/">
+      <span class="fw-bolder text-primary">PaperPulse</span>
+    </a>
+    <a
+      class="navbar-brand"
+      *ngIf="isLoggedIn() && !isAdmin()"
+      routerLink="/user/home/"
+    >
+      <span class="fw-bolder text-primary">PaperPulse</span>
+    </a>
+    <a class="navbar-brand" *ngIf="isAdmin()" routerLink="/admin/home/">
+      <span class="fw-bolder text-primary">PaperPulse</span>
+    </a>
+
+    <!-- Mobile Toggle -->
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Nav Links -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ms-lg-auto ms-0 mb-2 mb-lg-0 small fw-bolder">
+        <!-- Logged-in Users -->
+        <ng-container *ngIf="isLoggedIn(); else guestLinks">
+          <!-- Admin Links -->
+          <ng-container *ngIf="isAdmin(); else userLinks">
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/admin/home">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/admin/manage">Manage Research</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/admin/dashboard">Dashboard</a>
+            </li>
+          </ng-container>
+
+          <!-- User Links -->
+          <ng-template #userLinks>
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/user/home">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/user/upload">Upload</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/user/browse">Browse</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/user/profile">Profile</a>
+            </li>
+          </ng-template>
+
+          <!-- Logout -->
+          <li class="nav-item">
+            <button
+              (click)="logout()"
+              class="nav-link btn btn-link"
+              style="
+                border: none;
+                background: none;
+                padding: 0;
+                text-decoration: none;
+              "
+            >
+              Logout
+            </button>
+          </li>
+        </ng-container>
+
+        <!-- Guest Links -->
+        <ng-template #guestLinks>
+          <li class="nav-item">
+            <a class="nav-link" href="#about-us">About Us</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/login">Login</a>
+          </li>
+        </ng-template>
+      </ul>
+    </div>
+  </div>
+</nav>

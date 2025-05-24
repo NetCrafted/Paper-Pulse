@@ -1,0 +1,101 @@
+<section class="py-5">
+  <div class="container px-5">
+    <h1 class="text-gradient text-center mb-4">Browse Research Papers</h1>
+
+    <!-- Filters -->
+    <div class="card mb-4 shadow-sm">
+      <div class="card-body">
+        <form (ngSubmit)="applyFilters()" class="row g-3">
+          <!-- Search -->
+          <div class="col-md-4">
+            <input
+              type="text"
+              class="form-control"
+              [(ngModel)]="filters.q"
+              name="q"
+              placeholder="Search by title or abstract"
+            />
+          </div>
+
+          <!-- Order -->
+          <div class="col-md-4 d-flex align-items-center">
+            <div class="form-check form-check-inline">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="order"
+                value="asc"
+                [(ngModel)]="filters.order"
+                id="asc"
+              />
+              <label class="form-check-label" for="asc">Oldest First</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="order"
+                value="desc"
+                [(ngModel)]="filters.order"
+                id="desc"
+              />
+              <label class="form-check-label" for="desc">Newest First</label>
+            </div>
+          </div>
+
+          <!-- Categories -->
+          <div class="col-md-4">
+            <select
+              class="form-select"
+              multiple
+              (change)="onCategorySelect($event)"
+            >
+              <option *ngFor="let cat of categoryList" [value]="cat.id">
+                {{ cat.name }}
+              </option>
+            </select>
+            <small class="form-text text-muted"
+              >Hold Ctrl (or Cmd) to select multiple</small
+            >
+          </div>
+
+          <!-- Submit -->
+          <div class="col-12">
+            <button class="btn btn-primary" type="submit">Apply Filters</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Papers -->
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
+      <div *ngFor="let paper of papers" class="col">
+        <div class="card h-100 shadow-sm">
+          <img
+            [src]="paper.coverImage || 'assets/images/fallback_cover.png'"
+            class="card-img-top"
+            alt="Cover"
+          />
+          <div class="card-body">
+            <h5 class="card-title">
+              <a
+                [routerLink]="['/api/papers/', paper.id]"
+                class="text-decoration-none text-dark"
+                >{{ paper.title }}</a
+              >
+            </h5>
+            <p class="card-text small">
+              Published on: {{ paper.publicationDate | date }}<br />
+              by: {{ paper.uploader.first_name }} {{ paper.uploader.last_name }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- No Results -->
+    <p class="text-center mt-4" *ngIf="papers.length === 0">
+      No research papers found matching your criteria.
+    </p>
+  </div>
+</section>

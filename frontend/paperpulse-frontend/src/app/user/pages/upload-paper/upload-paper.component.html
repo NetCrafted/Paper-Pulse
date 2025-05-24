@@ -1,0 +1,142 @@
+<section class="py-5">
+  <div
+    *ngIf="toastVisible"
+    class="toast show position-fixed top-0 end-0 p-3"
+    style="z-index: 1200"
+  >
+    <div class="toast-header">
+      <strong class="me-auto">Notification</strong>
+    </div>
+    <div class="toast-body">
+      {{ toastMessage }}
+    </div>
+  </div>
+  <div class="container px-5">
+    <h1 class="text-gradient d-inline mb-4">Upload New Research</h1>
+
+    <form
+      [formGroup]="uploadForm"
+      (ngSubmit)="onSubmit()"
+      enctype="multipart/form-data"
+      novalidate
+    >
+      <!-- Title -->
+      <div class="mb-3">
+        <label for="title" class="form-label">Title</label>
+        <input
+          type="text"
+          class="form-control"
+          id="title"
+          formControlName="title"
+        />
+        <div
+          class="text-danger"
+          *ngIf="
+            uploadForm.get('title')?.invalid && uploadForm.get('title')?.touched
+          "
+        >
+          Title is required.
+        </div>
+      </div>
+
+      <!-- Abstract -->
+      <div class="mb-3">
+        <label for="abstract" class="form-label">Abstract</label>
+        <textarea
+          class="form-control"
+          id="abstract"
+          rows="4"
+          formControlName="abstract"
+        ></textarea>
+        <div
+          class="text-danger"
+          *ngIf="
+            uploadForm.get('abstract')?.invalid &&
+            uploadForm.get('abstract')?.touched
+          "
+        >
+          Abstract is required.
+        </div>
+      </div>
+
+      <!-- Co-author Name -->
+      <div class="mb-3">
+        <label for="coauthor_name" class="form-label"
+          >Co-author Name (optional)</label
+        >
+        <input
+          type="text"
+          class="form-control"
+          id="coauthor_name"
+          formControlName="coauthor_name"
+        />
+      </div>
+
+      <!-- Co-author Email -->
+      <div class="mb-3">
+        <label for="coauthor_email" class="form-label"
+          >Co-author Email (optional)</label
+        >
+        <input
+          type="email"
+          class="form-control"
+          id="coauthor_email"
+          formControlName="coauthor_email"
+        />
+      </div>
+
+      <!-- PDF -->
+      <div class="mb-3">
+        <label for="pdf" class="form-label">Research PDF</label>
+        <input
+          type="file"
+          class="form-control"
+          id="pdf"
+          (change)="onFileChange($event, 'pdf')"
+        />
+        <div class="text-danger" *ngIf="pdfError">{{ pdfError }}</div>
+      </div>
+
+      <!-- Cover Image -->
+      <div class="mb-3">
+        <label for="cover_image" class="form-label">Cover Image</label>
+        <input
+          type="file"
+          class="form-control"
+          id="cover_image"
+          (change)="onFileChange($event, 'coverImage')"
+        />
+        <div class="text-danger" *ngIf="coverImageError">
+          {{ coverImageError }}
+        </div>
+      </div>
+
+      <!-- Categories -->
+      <div class="mb-3">
+        <label for="categories" class="form-label">Categories</label>
+        <select
+          id="categories"
+          class="form-control"
+          multiple
+          (change)="onCategoryChange($event)"
+        >
+          <option *ngFor="let category of categoriesList" [value]="category.id">
+            {{ category.name }}
+          </option>
+        </select>
+      </div>
+
+      <div
+        class="text-danger"
+        *ngIf="
+          uploadForm.get('categories')?.invalid &&
+          uploadForm.get('categories')?.touched
+        "
+      >
+        Please select at least one category.
+      </div>
+      <!-- Submit -->
+      <button type="submit" class="btn btn-primary">Upload Research</button>
+    </form>
+  </div>
+</section>

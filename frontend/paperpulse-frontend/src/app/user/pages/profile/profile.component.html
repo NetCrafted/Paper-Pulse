@@ -1,0 +1,52 @@
+<section class="py-5">
+  <div class="container px-5">
+    <h1 class="text-gradient mb-4">My Profile</h1>
+
+    <!-- Toast -->
+    <div
+      *ngIf="toastVisible"
+      class="toast show position-fixed top-0 end-0 p-3"
+      style="z-index: 1200"
+    >
+      <div class="toast-header">
+        <strong class="me-auto">Notification</strong>
+      </div>
+      <div class="toast-body">{{ toastMessage }}</div>
+    </div>
+
+    <div class="row">
+      <!-- Change Password -->
+      <div class="col-md-6 mb-4">
+        <h3>Change Password</h3>
+        <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+          <div class="mb-3">
+            <label>Old Password</label>
+            <input
+              type="password"
+              class="form-control"
+              formControlName="old_password"
+            />
+          </div>
+          <div class="mb-3">
+            <label>New Password</label>
+            <input
+              type="password"
+              class="form-control"
+              formControlName="new_password"
+            />
+          </div>
+          <button class="btn btn-primary" type="submit">Update Password</button>
+        </form>
+      </div>
+
+      <!-- Delete Account -->
+      <div class="col-md-6 mb-4">
+        <h3>Delete Account</h3>
+        <p class="text-danger">Warning: This action is irreversible.</p>
+        <button class="btn btn-danger" (click)="deleteAccount()">
+          Delete Account
+        </button>
+      </div>
+    </div>
+  </div>
+</section>

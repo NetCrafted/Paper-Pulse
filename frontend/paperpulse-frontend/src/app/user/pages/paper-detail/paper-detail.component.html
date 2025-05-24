@@ -1,0 +1,44 @@
+<section class="py-5 container" *ngIf="!isLoading && paper">
+  <h1 class="text-gradient mb-3">{{ paper.title }}</h1>
+  <p class="mb-2">
+    Published on: {{ paper.publicationDate | date }}<br />
+    by: {{ paper.uploader.first_name }} {{ paper.uploader.last_name }}
+    <span *ngIf="paper.coauthor_name"> &amp; {{ paper.coauthor_name }}</span>
+  </p>
+  <p>{{ paper.abstract }}</p>
+
+  <div class="row">
+    <!-- Cover Image -->
+    <div class="col-12 col-md-6 mb-3">
+      <img
+        [src]="paper.coverImage || 'assets/images/fallback_cover.png'"
+        class="img-fluid"
+        alt="Cover Image"
+      />
+    </div>
+
+    <!-- Buttons -->
+    <div class="col-12 col-md-6 d-flex flex-column justify-content-center mb-3">
+      <button
+        class="btn btn-primary btn-lg mb-2"
+        (click)="downloadPDF(paper.id)"
+      >
+        Download PDF
+      </button>
+      <button class="btn btn-outline-dark btn-lg" (click)="previewPDF()">
+        Preview PDF
+      </button>
+    </div>
+  </div>
+
+  <p class="mt-3">
+    <strong>Categories:</strong>
+    <span *ngFor="let cat of paper.categories; let last = last">
+      {{ cat.name }}<span *ngIf="!last">, </span>
+    </span>
+  </p>
+</section>
+
+<div *ngIf="isLoading" class="text-center py-5">
+  <div class="spinner-border text-primary" role="status"></div>
+</div>

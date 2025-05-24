@@ -1,0 +1,78 @@
+<section class="py-5">
+  <div class="container px-5">
+    <h1 class="mb-4 text-center text-gradient">Rejected Research Papers</h1>
+
+    <!-- Table of rejected papers -->
+    <div class="table-responsive">
+      <table class="table table-striped table-bordered">
+        <thead class="table-light">
+          <tr>
+            <th>Title</th>
+            <th>Uploader</th>
+            <th>Categories</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let paper of rejectedPapers">
+            <td>{{ paper.title }}</td>
+            <td>
+              {{ paper.uploader.first_name }} {{ paper.uploader.last_name }}
+            </td>
+            <td>
+              <span *ngFor="let cat of paper.categories; let last = last">
+                {{ cat.name }}<span *ngIf="!last">, </span>
+              </span>
+            </td>
+            <td>
+              <button
+                class="btn btn-danger btn-sm"
+                (click)="confirmDelete(paper.id)"
+              >
+                Delete
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="rejectedPapers.length === 0">
+            <td colspan="4" class="text-center">No rejected papers found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div
+    *ngIf="showModal"
+    class="modal show d-block"
+    tabindex="-1"
+    style="background: rgba(0, 0, 0, 0.5); z-index: 1050"
+  >
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Confirm Paper Deletion</h5>
+          <button
+            type="button"
+            class="btn-close"
+            (click)="closeModal()"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-danger">
+            Are you sure you want to delete this paper? This action is
+            irreversible.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline-dark" (click)="closeModal()">
+            Cancel
+          </button>
+          <button class="btn btn-danger" (click)="deletePaper()">
+            Delete Paper
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
