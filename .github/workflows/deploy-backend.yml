@@ -5,6 +5,7 @@ on:
     branches: [ main ]
     paths:
       - 'backend/**' # Include backend changes
+      - '.github/workflows/deploy-backend.yml'
       - '!frontend/**' # Exclude frontend changes
 
 jobs:
@@ -22,12 +23,27 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up SSH key
+      - name: Set up SSH connection
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+            # Create .ssh directory
+            mkdir -p ~/.ssh
+            chmod 700 ~/.ssh
+            
+            # Write key file
+            echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+            # Fix line endings if needed
+            sed -i 's/\\n/\n/g' ~/.ssh/id_rsa
+            chmod 600 ~/.ssh/id_rsa
+            
+            # Verify key
+            ls -la ~/.ssh
+            file ~/.ssh/id_rsa
+            
+            # Add host to known_hosts
+            ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+            
+            # Test connection
+            ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -p ${{ secrets.EC2_PORT }} ubuntu@${{ secrets.EC2_HOST }} exit
 
       - name: Install rsync
         run: sudo apt-get install -y rsync
