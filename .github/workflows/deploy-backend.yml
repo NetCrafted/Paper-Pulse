@@ -13,7 +13,6 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      # these are only for the runner’s context
       RDS_HOST:     ${{ secrets.RDS_HOST }}
       RDS_NAME:     ${{ secrets.RDS_NAME }}
       RDS_USER:     ${{ secrets.RDS_USER }}
