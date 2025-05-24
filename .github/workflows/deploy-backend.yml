@@ -4,9 +4,10 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'backend/**'         # Include backend changes
-      - '.github/workflows/deploy-backend.yml' # Include workflow changes
-      - '!frontend/**'       # Exclude frontend changes
+      - 'backend/**'
+      - '.github/workflows/deploy-backend.yml'
+    paths-ignore:
+      - 'frontend/**'
 
 jobs:
   deploy:
@@ -24,24 +25,11 @@ jobs:
 
       - name: Configure SSH
         run: |
-          # Create .ssh directory with strict permissions
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
-
-          # Write private key
           printf "%s\n" "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-
-          # Seed known_hosts (don't fail if unreachable)
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
-
-      - name: Validate SSH connection
-        run: |
-          ssh -i ~/.ssh/id_rsa \
-            -o StrictHostKeyChecking=no \
-            -p ${{ secrets.EC2_PORT }} \
-            ubuntu@${{ secrets.EC2_HOST }} \
-            echo "SSH connection successful!"
 
       - name: Install rsync
         run: sudo apt-get update && sudo apt-get install -y rsync
@@ -57,38 +45,41 @@ jobs:
 
       - name: Deploy on EC2
         run: |
-          ssh -i ~/.ssh/id_rsa \
-            -o StrictHostKeyChecking=no \
-            -p ${{ secrets.EC2_PORT }} \
-            ubuntu@${{ secrets.EC2_HOST }} << 'DEPLOY'
-          set -e
-          cd ~/app
+          ssh -o StrictHostKeyChecking=no \
+              -i ~/.ssh/id_rsa \
+              -p ${{ secrets.EC2_PORT }} \
+              ubuntu@${{ secrets.EC2_HOST }} << 'DEPLOY'
+                set -e
+                cd ~/app
 
-          # Virtualenv setup
-          if [ ! -d venv ]; then
-            python3 -m venv venv
-          fi
-          source venv/bin/activate
+                # Ensure venv support is installed
+                sudo apt-get update
+                sudo apt-get install -y python3-venv python3-pip
 
-          # Install dependencies
-          pip install --upgrade pip
-          pip install -r requirements.txt
+                # Virtualenv setup
+                if [ ! -d venv ]; then
+                python3 -m venv venv
+                fi
+                source venv/bin/activate
 
-          # Django setup
-          python manage.py migrate --noinput
-          python manage.py collectstatic --noinput
+                # Install dependencies
+                pip install --upgrade pip
+                pip install -r requirements.txt
 
-          # Restart services
-          sudo systemctl restart gunicorn
-          sudo systemctl restart nginx
-          DEPLOY
+                # Django setup
+                python manage.py migrate --noinput
+                python manage.py collectstatic --noinput
+
+                # Restart services
+                sudo systemctl restart gunicorn
+                sudo systemctl restart nginx
+                DEPLOY
 
       - name: Verify deployment
         run: |
-          ssh -i ~/.ssh/id_rsa \
-            -o StrictHostKeyChecking=no \
-            -p ${{ secrets.EC2_PORT }} \
-            ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
-          curl -sf http://localhost:8000/health-check/ \
-            || { echo 'Django failed to start'; exit 1; }
-          EOF
+            ssh -i ~/.ssh/id_rsa \
+                -o StrictHostKeyChecking=no \
+                -p ${{ secrets.EC2_PORT }} \
+                ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+                curl -sf http://localhost:8000/health-check/ || { echo 'Django failed to start'; exit 1; }
+                EOF
