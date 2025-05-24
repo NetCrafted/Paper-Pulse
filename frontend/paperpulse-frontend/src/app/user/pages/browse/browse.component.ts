@@ -26,7 +26,7 @@ export class BrowseComponent {
 
   fetchCategories(): void {
     this.http
-      .get<any>('http://localhost:8000/api/papers/categories/')
+      .get<any>('http://ec2-16-171-23-239.eu-north-1.compute.amazonaws.com:8000/api/papers/categories/')
       .subscribe((res) => {
         this.categoryList = res.results || res;
       });
@@ -45,7 +45,7 @@ export class BrowseComponent {
       Authorization: `Bearer ${token}`,
     });
     this.http
-      .get<any>('http://localhost:8000/api/papers/', { params, headers })
+      .get<any>('http://ec2-16-171-23-239.eu-north-1.compute.amazonaws.com:8000/api/papers/', { params, headers })
       .subscribe((res) => {
         if (Array.isArray(res.results)) {
           this.papers = res.results;

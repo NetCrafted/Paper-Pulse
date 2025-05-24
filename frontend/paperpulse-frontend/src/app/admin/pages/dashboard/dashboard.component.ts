@@ -84,7 +84,7 @@ export class DashboardComponent {
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
 
     this.http
-      .get<any>('http://localhost:8000/api/papers/admin/dashboard', { headers })
+      .get<any>('http://ec2-16-171-23-239.eu-north-1.compute.amazonaws.com:8000/api/papers/admin/dashboard', { headers })
       .subscribe((data) => {
         this.categoryLabels = data.cat_labels;
         this.categoryData = data.cat_counts;

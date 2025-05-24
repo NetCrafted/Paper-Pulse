@@ -23,7 +23,7 @@ export class RejectedResearchComponent {
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
 
     this.http
-      .get<any>('http://localhost:8000/api/papers/rejected', { headers })
+      .get<any>('http://ec2-16-171-23-239.eu-north-1.compute.amazonaws.com:8000/api/papers/rejected', { headers })
       .subscribe({
         next: (res) => {
           this.rejectedPapers = res.results || res;
@@ -52,7 +52,7 @@ export class RejectedResearchComponent {
 
     this.http
       .delete(
-        `http://localhost:8000/api/papers/${this.selectedPaperId}/delete/`,
+        `http://ec2-16-171-23-239.eu-north-1.compute.amazonaws.com:8000/api/papers/${this.selectedPaperId}/delete/`,
         { headers },
       )
       .subscribe({

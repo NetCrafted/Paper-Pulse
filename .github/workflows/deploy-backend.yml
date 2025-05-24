@@ -1,0 +1,77 @@
+name: 🚀 Deploy Django Backend to EC2
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'backend/**'
+    paths-ignore:
+      - 'frontend/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      DB_HOST:     ${{ secrets.RDS_HOST }}
+      DB_NAME:     ${{ secrets.RDS_NAME }}
+      DB_USER:     ${{ secrets.RDS_USER }}
+      DB_PASSWORD: ${{ secrets.RDS_PASSWORD }}
+      DB_PORT:     ${{ secrets.RDS_PORT }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Install rsync
+        run: sudo apt-get install -y rsync
+
+      - name: Sync files to EC2
+        run: |
+          rsync -avz -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -p ${{ secrets.EC2_PORT }}" \
+            --exclude='.git/' \
+            --exclude='venv/' \
+            --exclude='.env' \
+            --exclude='frontend/' \
+            ./ ubuntu@${{ secrets.EC2_HOST }}:~/app/
+
+      - name: Deploy on EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no \
+              -i ~/.ssh/id_rsa \
+              -p ${{ secrets.EC2_PORT }} \
+              ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+          set -e
+          cd ~/app
+
+          # Virtualenv setup
+          if [ ! -d ~/app/venv ]; then
+            python3 -m venv ~/app/venv
+          fi
+          source ~/app/venv/bin/activate
+
+          # Install dependencies
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+          # Django setup
+          python manage.py migrate --noinput
+          python manage.py collectstatic --noinput
+
+          # Restart services
+          sudo systemctl restart gunicorn
+          sudo systemctl restart nginx
+          EOF
+
+      - name: Verify deployment
+        run: |
+          ssh -i ~/.ssh/id_rsa -p ${{ secrets.EC2_PORT }} ubuntu@${{ secrets.EC2_HOST }} "
+            curl -s http://localhost:8000/health-check/ || echo 'Django failed to start'
+          "
