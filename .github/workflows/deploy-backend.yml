@@ -24,65 +24,64 @@ jobs:
 
       - name: Configure SSH
         run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
           printf "%s\n" "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
 
       - name: Install rsync
-        run: sudo apt-get update && sudo apt-get install -y rsync
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rsync
 
-      - name: Sync code to EC2
+      - name: Sync backend to EC2
         run: |
           rsync -avz \
             -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -p ${{ secrets.EC2_PORT }}" \
             --exclude='venv/' \
             --exclude='.git/' \
             --exclude='frontend/' \
-            backend/ ubuntu@${{ secrets.EC2_HOST }}:~/app/backend/
+            backend/ ubuntu@${{ secrets.EC2_HOST }}:~/app/
 
       - name: Deploy on EC2
         run: |
           ssh -o StrictHostKeyChecking=no \
-              -i ~/.ssh/id_rsa \
-              -p ${{ secrets.EC2_PORT }} \
-              ubuntu@${{ secrets.EC2_HOST }} << 'DEPLOY'
-                set -e
+            -i ~/.ssh/id_rsa \
+            -p ${{ secrets.EC2_PORT }} \
+            ubuntu@${{ secrets.EC2_HOST }} << 'DEPLOY'
+            set -e
+            cd ~/app
 
-                # move into the actual backend directory
-                cd ~/app/backend
+            # show what landed
+            ls -la
 
-                # debug: confirm requirements.txt is present
-                ls -la
+            # ensure venv tools exist
+            sudo apt-get update
+            sudo apt-get install -y python3-venv python3-pip
 
-                # ensure venv support
-                sudo apt-get update
-                sudo apt-get install -y python3-venv python3-pip
+            # (re)create virtualenv
+            python3 -m venv --clear venv
+            source venv/bin/activate
 
-                # recreate virtualenv
-                python3 -m venv --clear venv
-                source venv/bin/activate
+            # install your dependencies
+            pip install --upgrade pip
+            pip install -r requirements.txt
 
-                # install dependencies from the synced requirements.txt
-                pip install --upgrade pip
-                pip install -r requirements.txt
+            # run Django migrations & collectstatic
+            python manage.py migrate --noinput
+            python manage.py collectstatic --noinput
 
-                # run migrations & collectstatic
-                python manage.py migrate --noinput
-                python manage.py collectstatic --noinput
-
-                # restart services
-                sudo systemctl restart gunicorn
-                sudo systemctl restart nginx
-                DEPLOY
+            # restart Gunicorn & Nginx
+            sudo systemctl restart gunicorn
+            sudo systemctl restart nginx
+            DEPLOY
 
       - name: Verify deployment
         run: |
           ssh -o StrictHostKeyChecking=no \
-              -i ~/.ssh/id_rsa \
-              -p ${{ secrets.EC2_PORT }} \
-              ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+            -i ~/.ssh/id_rsa \
+            -p ${{ secrets.EC2_PORT }} \
+            ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
             curl -sf http://localhost:8000/health-check/ \
             || { echo 'Django failed to start'; exit 1; }
             EOF
