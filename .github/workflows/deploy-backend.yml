@@ -20,73 +20,46 @@ jobs:
       DB_PORT:     ${{ secrets.RDS_PORT }}
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up SSH connection
+      - name: Configure SSH
         run: |
-            # Create .ssh directory
-            mkdir -p ~/.ssh
-            chmod 700 ~/.ssh
-            
-            # Write key file
-            echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-            # Fix line endings if needed
-            sed -i 's/\\n/\n/g' ~/.ssh/id_rsa
-            chmod 600 ~/.ssh/id_rsa
-            
-            # Verify key
-            ls -la ~/.ssh
-            file ~/.ssh/id_rsa
-            
-            # Add host to known_hosts
-            ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-            
-            # Test connection
-            ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -p ${{ secrets.EC2_PORT }} ubuntu@${{ secrets.EC2_HOST }} exit
+          mkdir -p ~/.ssh
+          cat << 'EOF' > ~/.ssh/id_rsa
+          ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          EOF
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Install rsync
-        run: sudo apt-get install -y rsync
-
-      - name: Sync files to EC2
+      - name: Validate connection
         run: |
-          rsync -avz -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -p ${{ secrets.EC2_PORT }}" \
-            --exclude='.git/' \
-            --exclude='venv/' \
-            --exclude='.env' \
-            --exclude='frontend/' \
+          ssh -i ~/.ssh/id_rsa -p ${{ secrets.EC2_PORT }} \
+            ubuntu@${{ secrets.EC2_HOST }} "echo 'SSH successful'"
+
+      - name: Sync code
+        run: |
+          rsync -avz -e "ssh -i ~/.ssh/id_rsa -p ${{ secrets.EC2_PORT }}" \
+            --exclude={'venv/','.git/','frontend/'} \
             ./ ubuntu@${{ secrets.EC2_HOST }}:~/app/
 
-      - name: Deploy on EC2
+      - name: Deploy
         run: |
-          ssh -o StrictHostKeyChecking=no \
-              -i ~/.ssh/id_rsa \
-              -p ${{ secrets.EC2_PORT }} \
-              ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+          ssh -i ~/.ssh/id_rsa -p ${{ secrets.EC2_PORT }} ubuntu@${{ secrets.EC2_HOST }} << 'DEPLOY'
           set -e
           cd ~/app
-
-          # Virtualenv setup
-          if [ ! -d ~/app/venv ]; then
-            python3 -m venv ~/app/venv
+          
+          # Python setup
+          if ! [ -d venv ]; then
+            python3 -m venv venv
           fi
-          source ~/app/venv/bin/activate
-
-          # Install dependencies
-          pip install --upgrade pip
+          source venv/bin/activate
           pip install -r requirements.txt
 
-          # Django setup
-          python manage.py migrate --noinput
+          # Django
+          python manage.py migrate
           python manage.py collectstatic --noinput
 
-          # Restart services
+          # Services
           sudo systemctl restart gunicorn
           sudo systemctl restart nginx
-          EOF
-
-      - name: Verify deployment
-        run: |
-          ssh -i ~/.ssh/id_rsa -p ${{ secrets.EC2_PORT }} ubuntu@${{ secrets.EC2_HOST }} "
-            curl -s http://localhost:8000/health-check/ || echo 'Django failed to start'
-          "
+          DEPLOY
