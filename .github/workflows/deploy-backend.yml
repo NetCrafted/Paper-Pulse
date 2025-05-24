@@ -4,9 +4,10 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'backend/**'         # Include backend changes
-      - '.github/workflows/deploy-backend.yml' # Include workflow changes
-      - '!frontend/**'       # Exclude frontend changes
+      - 'backend/**'                          # only trigger on backend changes
+      - '.github/workflows/deploy-backend.yml'
+    paths-ignore:
+      - 'frontend/**'
 
 jobs:
   deploy:
@@ -44,58 +45,40 @@ jobs:
 
       - name: Deploy on EC2
         run: |
-            ssh -o StrictHostKeyChecking=no \
-                -i ~/.ssh/id_rsa \
-                -p ${{ secrets.EC2_PORT }} \
-                ubuntu@${{ secrets.EC2_HOST }} << 'DEPLOY'
+          ssh -o StrictHostKeyChecking=no \
+              -i ~/.ssh/id_rsa \
+              -p ${{ secrets.EC2_PORT }} \
+              ubuntu@${{ secrets.EC2_HOST }} << 'DEPLOY'
             set -e
             cd ~/app
-            
-            # Debug: Show current directory contents
-            echo "Current directory: $(pwd)"
-            ls -la
-            
-            # Ensure Python environment is ready
+
+            # Ensure venv support is installed
             sudo apt-get update
             sudo apt-get install -y python3-venv python3-pip
-            
-            # Virtualenv setup with explicit Python path
-            if [ ! -d venv ]; then
-            echo "Creating new virtual environment..."
-            python3 -m venv venv --clear
+
+            # Recreate virtualenv every deploy to avoid stale/incomplete venvs
+            python3 -m venv --clear venv
             source venv/bin/activate
-            python -m pip install --upgrade pip wheel
-            else
-            echo "Using existing virtual environment..."
-            source venv/bin/activate
-            fi
-            
-            # Debug: Show Python and pip versions
-            echo "Python: $(python --version)"
-            echo "Pip: $(pip --version)"
-            
+
             # Install dependencies
+            pip install --upgrade pip
             pip install -r requirements.txt
-            
+
             # Django setup
             python manage.py migrate --noinput
             python manage.py collectstatic --noinput
-            
-            # Restart services with verification
-            sudo systemctl daemon-reload
+
+            # Restart services
             sudo systemctl restart gunicorn
             sudo systemctl restart nginx
-            
-            # Verify services are running
-            sudo systemctl is-active gunicorn || { echo "Gunicorn failed to start"; exit 1; }
-            sudo systemctl is-active nginx || { echo "Nginx failed to start"; exit 1; }
             DEPLOY
 
       - name: Verify deployment
         run: |
-            ssh -i ~/.ssh/id_rsa \
-                -o StrictHostKeyChecking=no \
-                -p ${{ secrets.EC2_PORT }} \
-                ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
-                curl -sf http://localhost:8000/health-check/ || { echo 'Django failed to start'; exit 1; }
-                EOF
+          ssh -o StrictHostKeyChecking=no \
+              -i ~/.ssh/id_rsa \
+              -p ${{ secrets.EC2_PORT }} \
+              ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+            curl -sf http://localhost:8000/health-check/ \
+            || { echo 'Django failed to start'; exit 1; }
+            EOF
