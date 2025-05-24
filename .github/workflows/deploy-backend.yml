@@ -5,7 +5,7 @@ on:
     branches: [ main ]
     paths:
       - 'backend/**'         # Include backend changes
-      - '.github/workflows/deploy-backend.yml' # Include workflow changes
+      - '.github/workflows/deploy-backend.yml' 
       - '!frontend/**'       # Exclude frontend changes
 
 jobs:
@@ -13,11 +13,12 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      DB_HOST:     ${{ secrets.RDS_HOST }}
-      DB_NAME:     ${{ secrets.RDS_NAME }}
-      DB_USER:     ${{ secrets.RDS_USER }}
-      DB_PASSWORD: ${{ secrets.RDS_PASSWORD }}
-      DB_PORT:     ${{ secrets.RDS_PORT }}
+      # these are only for the runner’s context
+      RDS_HOST:     ${{ secrets.RDS_HOST }}
+      RDS_NAME:     ${{ secrets.RDS_NAME }}
+      RDS_USER:     ${{ secrets.RDS_USER }}
+      RDS_PASSWORD: ${{ secrets.RDS_PASSWORD }}
+      RDS_PORT:     ${{ secrets.RDS_PORT }}
 
     steps:
       - uses: actions/checkout@v4
@@ -30,9 +31,7 @@ jobs:
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
 
       - name: Install rsync
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y rsync
+        run: sudo apt-get update && sudo apt-get install -y rsync
 
       - name: Sync backend to EC2
         run: |
@@ -52,26 +51,27 @@ jobs:
             set -e
             cd ~/app
 
-            # show what landed
-            ls -la
+            export RDS_HOST="${{ secrets.RDS_HOST }}"
+            export RDS_NAME="${{ secrets.RDS_NAME }}"
+            export RDS_USER="${{ secrets.RDS_USER }}"
+            export RDS_PASSWORD="${{ secrets.RDS_PASSWORD }}"
+            export RDS_PORT="${{ secrets.RDS_PORT }}"
 
-            # ensure venv tools exist
+            # Ensure venv support & recreate venv
             sudo apt-get update
             sudo apt-get install -y python3-venv python3-pip
-
-            # (re)create virtualenv
             python3 -m venv --clear venv
             source venv/bin/activate
 
-            # install your dependencies
+            # Install dependencies
             pip install --upgrade pip
             pip install -r requirements.txt
 
-            # run Django migrations & collectstatic
+            # Django setup
             python manage.py migrate --noinput
             python manage.py collectstatic --noinput
 
-            # restart Gunicorn & Nginx
+            # Restart services
             sudo systemctl restart gunicorn
             sudo systemctl restart nginx
             DEPLOY
@@ -79,9 +79,9 @@ jobs:
       - name: Verify deployment
         run: |
           ssh -o StrictHostKeyChecking=no \
-            -i ~/.ssh/id_rsa \
-            -p ${{ secrets.EC2_PORT }} \
-            ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+              -i ~/.ssh/id_rsa \
+              -p ${{ secrets.EC2_PORT }} \
+              ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
             curl -sf http://localhost:8000/health-check/ \
             || { echo 'Django failed to start'; exit 1; }
             EOF
