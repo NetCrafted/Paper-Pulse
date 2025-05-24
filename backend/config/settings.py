@@ -132,8 +132,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:4200",  # Angular dev server
-    "https://thepaperpulse.s3.eu-north-1.amazonaws.com/",
-    "https://thepaperpulse.s3.eu-north-1.amazonaws.com/index.html",
+    "https://thepaperpulse.s3.eu-north-1.amazonaws.com",  # S3 bucket for static files
 ]
 
 REST_FRAMEWORK = {
