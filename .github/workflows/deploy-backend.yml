@@ -40,7 +40,7 @@ jobs:
             --exclude='venv/' \
             --exclude='.git/' \
             --exclude='frontend/' \
-            backend/ ubuntu@${{ secrets.EC2_HOST }}:~/app/
+            backend/ ubuntu@${{ secrets.EC2_HOST }}:~/app/backend/
 
       - name: Deploy on EC2
         run: |
@@ -48,29 +48,34 @@ jobs:
               -i ~/.ssh/id_rsa \
               -p ${{ secrets.EC2_PORT }} \
               ubuntu@${{ secrets.EC2_HOST }} << 'DEPLOY'
-            set -e
-            cd ~/app
+                set -e
 
-            # Ensure venv support is installed
-            sudo apt-get update
-            sudo apt-get install -y python3-venv python3-pip
+                # move into the actual backend directory
+                cd ~/app/backend
 
-            # Recreate virtualenv every deploy to avoid stale/incomplete venvs
-            python3 -m venv --clear venv
-            source venv/bin/activate
+                # debug: confirm requirements.txt is present
+                ls -la
 
-            # Install dependencies
-            pip install --upgrade pip
-            pip install -r requirements.txt
+                # ensure venv support
+                sudo apt-get update
+                sudo apt-get install -y python3-venv python3-pip
 
-            # Django setup
-            python manage.py migrate --noinput
-            python manage.py collectstatic --noinput
+                # recreate virtualenv
+                python3 -m venv --clear venv
+                source venv/bin/activate
 
-            # Restart services
-            sudo systemctl restart gunicorn
-            sudo systemctl restart nginx
-            DEPLOY
+                # install dependencies from the synced requirements.txt
+                pip install --upgrade pip
+                pip install -r requirements.txt
+
+                # run migrations & collectstatic
+                python manage.py migrate --noinput
+                python manage.py collectstatic --noinput
+
+                # restart services
+                sudo systemctl restart gunicorn
+                sudo systemctl restart nginx
+                DEPLOY
 
       - name: Verify deployment
         run: |
