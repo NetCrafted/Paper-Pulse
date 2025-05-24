@@ -5,7 +5,7 @@ on:
     branches: [ main ]
     paths:
       - 'backend/**'         # Include backend changes
-      - '.github/workflows/deploy-backend.yml'
+      - '.github/workflows/deploy-backend.yml' # Include workflow changes
       - '!frontend/**'       # Exclude frontend changes
 
 jobs:
