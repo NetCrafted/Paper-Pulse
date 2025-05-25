@@ -4,9 +4,9 @@ on:
   push:
     branches: [ main ]
     paths:
-      - 'backend/**'         # Include backend changes
+      - 'backend/**'     
       - '.github/workflows/deploy-backend.yml' 
-      - '!frontend/**'       # Exclude frontend changes
+      - '!frontend/**'       
 
 jobs:
   deploy:
