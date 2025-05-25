@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-26akafx5*1qy+ciwvo+j0hg9wrx_iu*gda8%1(@4@8oubyaof3
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'localhost',
+    'localhost', # Local development
     '127.0.0.1',
     'ec2-16-171-23-239.eu-north-1.compute.amazonaws.com', # EC2 instance
     'dxic7v135yope.cloudfront.net',  # CloudFront distribution
