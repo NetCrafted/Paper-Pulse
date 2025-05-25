@@ -26,7 +26,7 @@ export class ManageResearchComponent {
 
   loadPapers(): void {
     this.http
-      .get<any>('http://ec2-16-171-23-239.eu-north-1.compute.amazonaws.com:80/api/papers/admin/research-manager', {
+      .get<any>('https://dxic7v135yope.cloudfront.net/api/papers/admin/research-manager', {
         headers: this.getAuthHeaders(),
       })
       .subscribe({
@@ -45,7 +45,7 @@ export class ManageResearchComponent {
   acceptPaper(id: number): void {
     this.http
       .post(
-        `http://ec2-16-171-23-239.eu-north-1.compute.amazonaws.com:80/api/papers/admin/research-manager/${id}/accept/`,
+        `https://dxic7v135yope.cloudfront.net/api/papers/admin/research-manager/${id}/accept/`,
         {},
         {
           headers: this.getAuthHeaders(),
@@ -63,7 +63,7 @@ export class ManageResearchComponent {
   rejectPaper(id: number): void {
     this.http
       .post(
-        `http://ec2-16-171-23-239.eu-north-1.compute.amazonaws.com:80/api/papers/admin/research-manager/${id}/reject/`,
+        `https://dxic7v135yope.cloudfront.net/api/papers/admin/research-manager/${id}/reject/`,
         {},
         {
           headers: this.getAuthHeaders(),
@@ -81,7 +81,7 @@ export class ManageResearchComponent {
   deletePaper(id: number): void {
     if (!confirm('Are you sure you want to delete this paper?')) return;
     this.http
-      .delete(`http://ec2-16-171-23-239.eu-north-1.compute.amazonaws.com:80/api/papers/${id}/delete/`, {
+      .delete(`https://dxic7v135yope.cloudfront.net/api/papers/${id}/delete/`, {
         headers: this.getAuthHeaders(),
       })
       .subscribe({

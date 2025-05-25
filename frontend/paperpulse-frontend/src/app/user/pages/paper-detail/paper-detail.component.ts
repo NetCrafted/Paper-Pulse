@@ -25,7 +25,7 @@ export class PaperDetailComponent {
     });
 
     this.http
-      .get(`http://ec2-16-171-23-239.eu-north-1.compute.amazonaws.com:80/api/papers/${id}/`, { headers })
+      .get(`https://dxic7v135yope.cloudfront.net/api/papers/${id}/`, { headers })
       .subscribe({
         next: (res) => {
           this.paper = res;
@@ -45,7 +45,7 @@ export class PaperDetailComponent {
     });
 
     this.http
-      .get(`http://ec2-16-171-23-239.eu-north-1.compute.amazonaws.com:80/api/papers/${paperId}/download/`, {
+      .get(`https://dxic7v135yope.cloudfront.net/api/papers/${paperId}/download/`, {
         headers,
         responseType: 'blob',
       })

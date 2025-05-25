@@ -39,7 +39,7 @@ export class UploadPaperComponent {
 
   fetchCategories(): void {
     this.http
-      .get<any[]>('http://ec2-16-171-23-239.eu-north-1.compute.amazonaws.com:80/api/papers/categories/')
+      .get<any[]>('https://dxic7v135yope.cloudfront.net/api/papers/categories/')
       .subscribe({
         next: (res: any) => (this.categoriesList = res.results),
         error: () => this.showToast('Failed to load categories'),
@@ -104,7 +104,7 @@ export class UploadPaperComponent {
     }
 
     this.http
-      .post('http://ec2-16-171-23-239.eu-north-1.compute.amazonaws.com:80/api/papers/upload/', formData, { headers })
+      .post('https://dxic7v135yope.cloudfront.net/api/papers/upload/', formData, { headers })
       .subscribe({
         next: () => {
           this.showToast('Research uploaded successfully!');
