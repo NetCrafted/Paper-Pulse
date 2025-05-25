@@ -29,7 +29,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    'ec2-16-171-23-239.eu-north-1.compute.amazonaws.com',
+    'ec2-16-171-23-239.eu-north-1.compute.amazonaws.com', # EC2 instance
     'dxic7v135yope.cloudfront.net',  # CloudFront distribution
 ]
 
