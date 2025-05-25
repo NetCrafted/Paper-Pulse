@@ -62,6 +62,9 @@ jobs:
             python3 -m venv --clear venv
             source venv/bin/activate
 
+            # *** Install Nginx if it’s missing ***
+            sudo apt-get install -y nginx
+
             # Install dependencies
             pip install --upgrade pip
             pip install -r requirements.txt
