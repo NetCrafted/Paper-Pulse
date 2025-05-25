@@ -6,7 +6,7 @@ on:
     paths:
       - 'backend/**'     
       - '.github/workflows/deploy-backend.yml' 
-      - '!frontend/**'       
+      - '!frontend/**'    # Exclude frontend changes from triggering this workflow   
 
 jobs:
   deploy:
