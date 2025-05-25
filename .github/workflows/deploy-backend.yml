@@ -45,38 +45,30 @@ jobs:
 
       - name: Deploy on EC2
         run: |
-          ssh -o StrictHostKeyChecking=no \
-              -i ~/.ssh/id_rsa \
-              -p ${{ secrets.EC2_PORT }} \
-              ubuntu@${{ secrets.EC2_HOST }} << 'DEPLOY'
-                set -e
-                cd ~/app
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'DEPLOY'
+          set -e
+          cd ~/app
 
-            export RDS_HOST="${{ secrets.RDS_HOST }}"
-            export RDS_NAME="${{ secrets.RDS_NAME }}"
-            export RDS_USER="${{ secrets.RDS_USER }}"
-            export RDS_PASSWORD="${{ secrets.RDS_PASSWORD }}"
-            export RDS_PORT="${{ secrets.RDS_PORT }}"
+          export RDS_HOST="${{ secrets.RDS_HOST }}"
+          export RDS_NAME="${{ secrets.RDS_NAME }}"
+          export RDS_USER="${{ secrets.RDS_USER }}"
+          export RDS_PASSWORD="${{ secrets.RDS_PASSWORD }}"
+          export RDS_PORT="${{ secrets.RDS_PORT }}"
 
-                # ensure venv tools
-                sudo apt-get update
-                sudo apt-get install -y python3-venv python3-pip
+          # recreate venv
+          python3 -m venv --clear venv
+          source venv/bin/activate
 
-                # recreate venv
-                python3 -m venv --clear venv
-                source venv/bin/activate
+          # install deps & migrate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          python manage.py migrate --noinput
+          python manage.py collectstatic --noinput
 
-                # install dependencies
-                pip install --upgrade pip
-                pip install -r requirements.txt
+          # restart your service
+          sudo systemctl restart gunicorn
+          DEPLOY
 
-                # run migrations & collectstatic
-                python manage.py migrate --noinput
-                python manage.py collectstatic --noinput
-
-                # restart gunicorn
-                sudo systemctl restart gunicorn
-            DEPLOY
 
       - name: Verify deployment
         run: |
