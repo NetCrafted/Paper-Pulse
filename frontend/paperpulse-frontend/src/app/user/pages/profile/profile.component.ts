@@ -33,7 +33,7 @@ export class ProfileComponent {
 
     this.http
       .post(
-        'http://ec2-16-171-23-239.eu-north-1.compute.amazonaws.com:8000/api/users/change-password/',
+        'http://ec2-16-171-23-239.eu-north-1.compute.amazonaws.com:80/api/users/change-password/',
         this.passwordForm.value,
         { headers },
       )
@@ -55,7 +55,7 @@ export class ProfileComponent {
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
 
     this.http
-      .delete('http://ec2-16-171-23-239.eu-north-1.compute.amazonaws.com:8000/api/users/delete-account/', { headers })
+      .delete('http://ec2-16-171-23-239.eu-north-1.compute.amazonaws.com:80/api/users/delete-account/', { headers })
       .subscribe({
         next: () => {
           localStorage.clear();

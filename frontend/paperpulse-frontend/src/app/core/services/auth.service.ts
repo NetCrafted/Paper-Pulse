@@ -6,7 +6,7 @@ import { map, Observable, tap, throwError } from 'rxjs';
   providedIn: 'root',
 })
 export class AuthService {
-  private baseUrl = 'http://ec2-16-171-23-239.eu-north-1.compute.amazonaws.com:8000/api/users';
+  private baseUrl = 'http://ec2-16-171-23-239.eu-north-1.compute.amazonaws.com:80/api/users';
   constructor(private httpClient: HttpClient) {}
 
   signup(data: any): Observable<any> {
@@ -21,7 +21,7 @@ export class AuthService {
     }
 
     return this.httpClient
-      .post<any>('http://ec2-16-171-23-239.eu-north-1.compute.amazonaws.com:8000/api/token/refresh/', { refresh })
+      .post<any>('http://ec2-16-171-23-239.eu-north-1.compute.amazonaws.com:80/api/token/refresh/', { refresh })
       .pipe(
         tap((res) => {
           localStorage.setItem('token', res.access); // update access token
@@ -36,7 +36,7 @@ export class AuthService {
 
   login(credentials: { username: string; password: string }): Observable<any> {
     return this.httpClient
-      .post('http://ec2-16-171-23-239.eu-north-1.compute.amazonaws.com:8000/api/token/', credentials)
+      .post('http://ec2-16-171-23-239.eu-north-1.compute.amazonaws.com:80/api/token/', credentials)
       .pipe(
         tap((res: any) => {
           localStorage.setItem('token', res.access);
