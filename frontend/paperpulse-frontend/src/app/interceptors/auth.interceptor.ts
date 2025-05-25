@@ -9,7 +9,9 @@ import {
 import { Observable, throwError, BehaviorSubject } from 'rxjs';
 import { catchError, filter, switchMap, take } from 'rxjs/operators';
 import { AuthService } from '../core/services/auth.service';
-
+// This interceptor handles the authentication token for outgoing HTTP requests.
+// It adds the token to the request headers and handles token refresh on 401 errors.
+// It uses the AuthService to manage the token and refresh logic.
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
   private isRefreshing = false;
