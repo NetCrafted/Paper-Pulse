@@ -72,10 +72,10 @@ jobs:
 
       - name: Verify deployment
         run: |
-          ssh -o StrictHostKeyChecking=no \
-              -i ~/.ssh/id_rsa \
-              -p ${{ secrets.EC2_PORT }} \
-              ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
-            curl -sf http://localhost:8000/health-check/ \
+          ssh -i ~/.ssh/id_rsa \
+            -o StrictHostKeyChecking=no \
+            -p ${{ secrets.EC2_PORT }} \
+            ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+          curl -sf http://localhost:8000/health-check/ \
             || { echo 'Django failed to start'; exit 1; }
-            EOF
+          EOF
