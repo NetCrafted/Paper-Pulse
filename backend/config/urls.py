@@ -24,7 +24,13 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 from users.views import CustomTokenObtainPairView
+from django.http import JsonResponse
+
+def health_check(request):
+    return JsonResponse({"status": "ok"})
+
 urlpatterns = [
+    path("health-check/", health_check),
     path('admin/', admin.site.urls),
      path('api/users/', include('users.urls')),
     path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
