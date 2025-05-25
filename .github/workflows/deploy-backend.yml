@@ -52,6 +52,12 @@ jobs:
                 set -e
                 cd ~/app
 
+            export RDS_HOST="${{ secrets.RDS_HOST }}"
+            export RDS_NAME="${{ secrets.RDS_NAME }}"
+            export RDS_USER="${{ secrets.RDS_USER }}"
+            export RDS_PASSWORD="${{ secrets.RDS_PASSWORD }}"
+            export RDS_PORT="${{ secrets.RDS_PORT }}"
+
                 # ensure venv tools
                 sudo apt-get update
                 sudo apt-get install -y python3-venv python3-pip
