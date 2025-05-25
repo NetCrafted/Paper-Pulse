@@ -30,7 +30,9 @@ jobs:
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
 
       - name: Install rsync
-        run: sudo apt-get update && sudo apt-get install -y rsync
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rsync
 
       - name: Sync backend to EC2
         run: |
@@ -44,38 +46,30 @@ jobs:
       - name: Deploy on EC2
         run: |
           ssh -o StrictHostKeyChecking=no \
-            -i ~/.ssh/id_rsa \
-            -p ${{ secrets.EC2_PORT }} \
-            ubuntu@${{ secrets.EC2_HOST }} << 'DEPLOY'
-            set -e
-            cd ~/app
+              -i ~/.ssh/id_rsa \
+              -p ${{ secrets.EC2_PORT }} \
+              ubuntu@${{ secrets.EC2_HOST }} << 'DEPLOY'
+                set -e
+                cd ~/app
 
-            export RDS_HOST="${{ secrets.RDS_HOST }}"
-            export RDS_NAME="${{ secrets.RDS_NAME }}"
-            export RDS_USER="${{ secrets.RDS_USER }}"
-            export RDS_PASSWORD="${{ secrets.RDS_PASSWORD }}"
-            export RDS_PORT="${{ secrets.RDS_PORT }}"
+                # ensure venv tools
+                sudo apt-get update
+                sudo apt-get install -y python3-venv python3-pip
 
-            # Ensure venv support & recreate venv
-            sudo apt-get update
-            sudo apt-get install -y python3-venv python3-pip
-            python3 -m venv --clear venv
-            source venv/bin/activate
+                # recreate venv
+                python3 -m venv --clear venv
+                source venv/bin/activate
 
-            # *** Install Nginx if it’s missing ***
-            sudo apt-get install -y nginx
+                # install dependencies
+                pip install --upgrade pip
+                pip install -r requirements.txt
 
-            # Install dependencies
-            pip install --upgrade pip
-            pip install -r requirements.txt
+                # run migrations & collectstatic
+                python manage.py migrate --noinput
+                python manage.py collectstatic --noinput
 
-            # Django setup
-            python manage.py migrate --noinput
-            python manage.py collectstatic --noinput
-
-            # Restart services
-            sudo systemctl restart gunicorn
-            sudo systemctl restart nginx
+                # restart gunicorn
+                sudo systemctl restart gunicorn
             DEPLOY
 
       - name: Verify deployment
